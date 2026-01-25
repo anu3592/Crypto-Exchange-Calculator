@@ -120,4 +120,13 @@ app.get('/api/v1/arbitrage/:coin', async (req, res) => {
     }
 });
 
+app.get('/health', (req, res) => {
+    console.log("Ping received: Server is Warm!");
+    res.status(200).json({
+        status: "Active",
+        message: "Server is awake and ready for arbitrage!",
+        timestamp: new Date().toISOString()
+    });
+});
+
 app.listen(PORT, () => console.log(`Master API: http://localhost:${PORT}/api/v1/arbitrage/BTC?amount=100000&currency=INR&forex_fee=2`));
