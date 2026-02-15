@@ -52,7 +52,7 @@ app.get('/api/v1/arbitrage/:coin', async (req, res) => {
         // --- PHASE 2: Global Scanning ---
         const fetchWithTimeout = async (id) => {
             const timeout = new Promise((_, reject) => 
-                setTimeout(() => reject(new Error('Timeout')), 4000)
+                setTimeout(() => reject(new Error('Timeout')), 12000)
             );
             const request = exchangeInstances[id].fetchTicker(`${coin}/USDT`);
             return Promise.race([request, timeout]);
