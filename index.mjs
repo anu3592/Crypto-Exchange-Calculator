@@ -8,11 +8,11 @@ const app = express();
 const PORT = 3000;
 
 
-// Memory Leak Fix: Initialize Top 10 Exchanges once
+
 
 const limiter = rateLimit({
-    windowMs: 1 * 60 * 1000, // 1 minute
-    max: 50, // Har IP se max 15 requests
+    windowMs: 1 * 60 * 1000, 
+    max: 50, 
     message: { error: "Too many requests, please try again after a minute." }
 });
 app.use('/api/', limiter);
@@ -37,7 +37,7 @@ app.get('/api/v1/arbitrage/:coin', async (req, res) => {
     const inputAmount = parseFloat(req.query.amount) || 100000;
     const localCurr = (req.query.currency || 'INR').toUpperCase();
     
-    // Naya Feature: User forex_fee daal sakta hai, warna default 2.5%
+    
     const forexFeePercent = req.query.forex_fee ? parseFloat(req.query.forex_fee) : 2.5;
     const forexFeeDecimal = forexFeePercent / 100;
 
@@ -45,11 +45,10 @@ app.get('/api/v1/arbitrage/:coin', async (req, res) => {
         const rates = await getForexRates();
         const usdToLocal = rates[localCurr] || 1;
 
-        // --- PHASE 1: Local Currency to USDT (Entry) ---
-        // Yahan humne user ki custom forex fee apply ki hai
+        
         const initialUSDT = (inputAmount / usdToLocal) * (1 - forexFeeDecimal);
 
-        // --- PHASE 2: Global Scanning ---
+        
         const fetchWithTimeout = async (id) => {
             const timeout = new Promise((_, reject) => 
                 setTimeout(() => reject(new Error('Timeout')), 12000)
@@ -59,7 +58,7 @@ app.get('/api/v1/arbitrage/:coin', async (req, res) => {
         };
         const pricePromises = Object.keys(exchangeInstances).map(async (id) => {
             try {
-                //const ticker = await exchangeInstances[id].fetchTicker(`${coin}/USDT`);
+                
                 const ticker = await fetchWithTimeout(id);
                 return { id, price: ticker.last, status: 'success' };
             } catch (e) { return { id, status: 'error' }; }
@@ -74,13 +73,12 @@ app.get('/api/v1/arbitrage/:coin', async (req, res) => {
         const bestBuy = sorted[0];
         const bestSell = sorted[sorted.length - 1];
 
-        // --- PHASE 3: Crypto Arbitrage (USDT Logic) ---
-        const cryptoFees = 0.006; // 0.6% (Taker fee on both sides + Network transfer)
+        
+        const cryptoFees = 0.006; 
         const finalUSDT = (initialUSDT / bestBuy.price) * bestSell.price * (1 - cryptoFees);
         const netProfitUSDT = finalUSDT - initialUSDT;
 
-        // --- PHASE 4: USDT back to Local (Exit) ---
-        // TDS (1% for India) + Withdrawal/Conversion Fee
+        
         const exitFee = localCurr === 'INR' ? (0.01 + forexFeeDecimal) : forexFeeDecimal; 
         const finalLocalAmount = (finalUSDT * usdToLocal) * (1 - exitFee);
         const netProfitLocal = finalLocalAmount - inputAmount;
