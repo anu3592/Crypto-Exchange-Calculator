@@ -17,7 +17,7 @@ const limiter = rateLimit({
 });
 app.use('/api/', limiter);
 
-const priorityIds = ['binance', 'bybit', 'okx', 'kucoin', 'kraken', 'gateio', 'mexc', 'huobi', 'coinbase', 'bitget'];
+const priorityIds = ['binance', 'bybit', 'okx', 'kucoin', 'gateio'];
 const exchangeInstances = {};
 priorityIds.forEach(id => {
     if (ccxt.exchanges.includes(id)) {
